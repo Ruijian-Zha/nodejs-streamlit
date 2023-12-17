@@ -13,6 +13,17 @@ app = Flask(__name__)
 @app.route('/upload', methods=['POST'])
 def upload_to_github():
     """
+    Handles a POST request to the '/upload' route, retrieves data from the request, checks for necessary data, and calls the function to upload a base64 encoded image to GitHub.
+
+    The function has no explicit parameters. It retrieves 'image' (base64 encoded), 'username', 'repo', and 'token' from the request data and environment variables.
+
+    Returns:
+        A JSON response with either the URL of the uploaded image upon a successful upload or an error message indicating failure.
+
+    Exceptions:
+        Catches any exceptions during the image upload and returns a JSON response with the error message.
+    """
+    """
     Handle a POST request to the '/upload' route, retrieve data from the request, check for necessary data,
     and call the function to upload a base64 encoded image to GitHub.
 
@@ -67,7 +78,10 @@ def upload_to_github():
 
 def upload_image_to_github_base64(encoded_image, username, repo, token, image_filename):
     """
-    Upload a base64 encoded image to a specified GitHub repository.
+    Uploads a base64 encoded image to a specified GitHub repository.
+
+
+    
 
     Args:
         encoded_image (str): The base64 encoded image string.
