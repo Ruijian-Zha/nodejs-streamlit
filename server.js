@@ -72,7 +72,7 @@ app.get('/open-url', async (req, res) => {
     const jsonResponse = await response.json();
 
     // Clean up the image file after sending
-    await fsp.unlink(imagePath);
+    // await fsp.unlink(imagePath);
 
     if (response.ok) {
       res.send(`URL is opened in Chrome and screenshot uploaded: ${jsonResponse.url}`);
