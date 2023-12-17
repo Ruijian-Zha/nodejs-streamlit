@@ -1,3 +1,7 @@
+/**
+ * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
+ */
+
 const express = require('express');
 const { Builder } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
@@ -19,6 +23,11 @@ async function getDriver() {
   return driver;
 }
 
+/**
+ * Handles the GET request to open a URL in Chrome.
+ *
+ * This function takes a URL from the query string of the GET request and uses the Chrome WebDriver to open the URL in Chrome.
+ */
 app.get('/open-url', async (req, res) => {
   const url = req.query.url; // Get the URL from the query string
   if (!url) {
