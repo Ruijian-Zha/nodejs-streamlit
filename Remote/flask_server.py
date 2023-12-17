@@ -41,6 +41,17 @@ def upload_image_to_github(image_path, username, repo, token):
 @app.route('/upload', methods=['POST'])
 def upload_to_github():
     """
+    Handle a POST request to the '/upload' route, retrieve data from the request and environment variables, check for necessary data, and call the function to upload an image to GitHub.
+
+    This function does not have explicit parameters. Instead, it retrieves 'image_path', 'username', 'repo', and 'token' from the request data and environment variables. 'image_path' is the path to the image file that will be uploaded. 'username', 'repo', and 'token' are GitHub credentials required to authenticate the upload request.
+
+    Returns:
+        A JSON response with either the URL of the uploaded image upon a successful upload or an error message indicating failure.
+
+    Exceptions:
+        Catches any exceptions during the image upload and returns a JSON response with the error message.
+    """
+    """
     Handle a POST request to the '/upload' route, retrieve data from the request, check for necessary data,
     and call the function to upload an image to GitHub.
 
