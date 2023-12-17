@@ -48,18 +48,18 @@ app.get('/open-url', async (req, res) => {
     
     // Take a screenshot
     const screenshot = await driver.takeScreenshot();
-    const imagePath = `screenshot.png`;
-    await fsp.writeFile(imagePath, screenshot, 'base64');
-
+    const screenshotBuffer = Buffer.from(screenshot, 'base64');
+    
     // Prepare form data for POST request
     const formData = new FormData();
-    formData.append('image', screenshot, { filename: 'screenshot.png', contentType: 'image/png' });
-
+    formData.append('image', screenshotBuffer, { filename: 'screenshot.png', contentType: 'image/png' });
+    
     // Send the screenshot to the Flask server
     const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/upload'; // Flask server URL
     const response = await fetch(flaskServerUrl, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: formData.getHeaders() // This is necessary for multipart/form-data
     });
     const jsonResponse = await response.json();
 
