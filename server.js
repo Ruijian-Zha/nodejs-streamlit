@@ -2,6 +2,7 @@
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
  */
 
+const module = require('module');
 const express = require('express');
 const { Builder } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
@@ -84,3 +85,5 @@ app.get('/open-url', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+module.exports = app;
