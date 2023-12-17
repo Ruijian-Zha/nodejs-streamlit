@@ -1,5 +1,7 @@
 /**
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
+ * It contains the getDriver() function which is responsible for creating and returning a Chrome WebDriver instance.
+ * The server is used in conjunction with the Streamlit UI to provide a seamless user experience.
  */
 
 const module = require('module');
@@ -20,6 +22,12 @@ const port = 3000;
 // Global variable to keep track of the browser instance
 let driver;
 
+/**
+ * This function creates a new Chrome WebDriver instance if one does not already exist.
+ * It then returns the WebDriver instance.
+ * 
+ * @return {WebDriver} The Chrome WebDriver instance.
+ */
 async function getDriver() {
   if (driver) {
     return driver;
