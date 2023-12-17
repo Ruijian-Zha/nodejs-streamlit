@@ -19,6 +19,12 @@ const port = 3000;
 // Global variable to keep track of the browser instance
 let driver;
 
+async function openUrlInChrome(url) {
+  const driver = await getDriver();
+  await driver.get(url);
+  return driver;
+}
+
 async function getDriver() {
   if (driver) {
     return driver;
@@ -43,28 +49,46 @@ app.get('/open-url', async (req, res) => {
   }
 
   try {
-    const driver = await getDriver();
-    await driver.get(url);
+    const driver = await openUrlInChrome(url);
     
     // Take a screenshot
-    const screenshot = await driver.takeScreenshot();
-    const imagePath = `screenshot.png`;
-    await fsp.writeFile(imagePath, screenshot, 'base64');
+    async function takeScreenshot(driver) {
+  const screenshot = await driver.takeScreenshot();
+  const imagePath = `screenshot.png`;
+  await fsp.writeFile(imagePath, screenshot, 'base64');
+  return screenshot;
+}
 
     // Prepare form data for POST request
-    const formData = new FormData();
-    formData.append('image', screenshot, { filename: 'screenshot.png', contentType: 'image/png' });
+    const screenshot = await takeScreenshot(driver);
+
+async function prepareFormData(screenshot) {
+  const formData = new FormData();
+  formData.append('image', screenshot, { filename: 'screenshot.png', contentType: 'image/png' });
+  return formData;
+}
 
     // Send the screenshot to the Flask server
-    const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/upload'; // Flask server URL
-    const response = await fetch(flaskServerUrl, {
-      method: 'POST',
-      body: formData
-    });
+    const formData = await prepareFormData(screenshot);
+
+async function sendScreenshotToFlaskServer(formData) {
+  const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/upload'; // Flask server URL
+  const response = await fetch(flaskServerUrl, {
+    method: 'POST',
+    body: formData
+  });
+  return response;
+}
+
+const response = await sendScreenshotToFlaskServer(formData);
     const jsonResponse = await response.json();
 
     // Clean up the image file after sending
-    await fsp.unlink(imagePath);
+    async function cleanupImageFile(imagePath) {
+  await fsp.unlink(imagePath);
+}
+
+await cleanupImageFile(imagePath);
 
     if (response.ok) {
       res.send(`URL is opened in Chrome and screenshot uploaded: ${jsonResponse.url}`);
