@@ -1,7 +1,16 @@
+"""
+This file creates a Streamlit interface for a chatbot that can open URLs in a browser.
+"""
+
 import streamlit as st
 import requests
 from urllib.parse import urlparse, urlunparse
 
+# Define the Streamlit application's configuration.
+"""
+Sets up the main Streamlit interface, which includes the title of the application,
+the initial state of the sidebar, and the main interactive components of the chat interface.
+"""
 st.set_page_config(
     page_title="Agent2.ai",
     initial_sidebar_state='collapsed'
@@ -18,6 +27,10 @@ with st.sidebar:
 base_url = "https://verified-pangolin-terribly.ngrok-free.app/open-url"
 
 with st.container():
+    """
+    Takes the user's input from the Streamlit chat interface, checks if it is a URL,
+    and if so, sends a GET request to the server to open the URL in the user's default browser.
+    """
     user_input = st.chat_input("Type something...")
     if user_input:
         with st.chat_message("user"):
