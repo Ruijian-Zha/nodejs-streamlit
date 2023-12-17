@@ -27,7 +27,19 @@ def upload_to_github():
         Catches any exceptions during the image upload and returns a JSON response with the error message.
     """
     # Retrieve data from the request
-# Retrieve the file from the request
+    data = retrieve_request_data(request)
+    if not data:
+        return jsonify({"error": "Missing data"}), 400
+
+    # Check for necessary data
+    if not check_data(data):
+        return jsonify({"error": "Missing data"}), 400
+
+    # Call the function to upload the image
+    upload_url = upload_image(data)
+    if upload_url.startswith("Error"):
+        return jsonify({"error": upload_url}), 500
+    return jsonify({"url": upload_url})
     if 'image' not in request.files:
         return jsonify({"error": "No image file provided"}), 400
     file = request.files['image']
@@ -78,3 +90,57 @@ def upload_image_to_github_base64(encoded_image, username, repo, token, image_fi
 
 if __name__ == '__main__':
     app.run(debug=True)
+def retrieve_request_data(request):
+    """
+    Retrieve data from the request.
+
+    Args:
+        request (flask.Request): The request object.
+
+    Returns:
+        dict: A dictionary containing the retrieved data.
+    """
+    if 'image' not in request.files:
+        return None
+    file = request.files['image']
+    encoded_image = base64.b64encode(file.read()).decode('utf-8')
+    username = os.getenv('USERNAME')
+    repo = os.getenv('REPO')
+    token = os.getenv('TOKEN')
+
+    return {
+        'encoded_image': encoded_image,
+        'username': username,
+        'repo': repo,
+        'token': token
+    }
+
+def check_data(data):
+    """
+    Check for necessary data.
+
+    Args:
+        data (dict): A dictionary containing the data to check.
+
+    Returns:
+        bool: True if all necessary data is present, False otherwise.
+    """
+    return all(data.values())
+
+def upload_image(data):
+    """
+    Call the function to upload an image to GitHub.
+
+    Args:
+        data (dict): A dictionary containing the necessary data.
+
+    Returns:
+        str: The upload URL or an error message.
+    """
+    try:
+        # Generate a unique filename based on the current timestamp
+        image_filename = datetime.now().strftime('%Y%m%d%H%M%S') + ".png"
+        upload_url = upload_image_to_github_base64(data['encoded_image'], data['username'], data['repo'], data['token'], image_filename)
+        return upload_url
+    except Exception as e:
+        return "Error: " + str(e)
