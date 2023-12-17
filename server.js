@@ -40,6 +40,16 @@ async function getDriver() {
   return driver;
 }
 
+// Define the sendScreenshotToFlaskServer function
+async function sendScreenshotToFlaskServer(formData) {
+  const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/upload'; // Flask server URL
+  const response = await fetch(flaskServerUrl, {
+    method: 'POST',
+    body: formData,
+    headers: formData.getHeaders() // This line is necessary for setting the correct Content-Type for multipart/form-data
+  });
+  return response;
+}
 /**
  * Handles the GET request to open a URL in Chrome.
  *
@@ -54,52 +64,45 @@ app.get('/open-url', async (req, res) => {
 
   try {
     const driver = await openUrlInChrome(url);
-    
-    // Take a screenshot
+    const imagePath = `screenshot.png`; // Define imagePath here
 
+    // Take a screenshot
     async function takeScreenshot(driver) {
-  const screenshot = await driver.takeScreenshot();
-  const imagePath = `screenshot.png`;
-  await fsp.writeFile(imagePath, screenshot, 'base64');
-  return screenshot;
-}
+      const screenshot = await driver.takeScreenshot();
+      await fsp.writeFile(imagePath, screenshot, 'base64');
+      return screenshot;
+    }
 
     // Prepare form data for POST request
     const screenshot = await takeScreenshot(driver);
 
-async function prepareFormData(screenshot) {
-  const formData = new FormData();
-  formData.append('image', screenshot, { filename: 'screenshot.png', contentType: 'image/png' });
-  return formData;
-}
-
-    // Send the screenshot to the Flask server
-    const formData = await prepareFormData(screenshot);
-
-async function sendScreenshotToFlaskServer(formData) {
-  const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/upload'; // Flask server URL
-  const response = await fetch(flaskServerUrl, {
-    method: 'POST',
-    body: formData
-  });
-  return response;
-}
-
-const response = await sendScreenshotToFlaskServer(formData);
-    const jsonResponse = await response.json();
-
-    // Clean up the image file after sending
-    async function cleanupImageFile(imagePath) {
-  await fsp.unlink(imagePath);
-}
-
-await cleanupImageFile(imagePath);
-
-    if (response.ok) {
-      res.send(`URL is opened in Chrome and screenshot uploaded: ${jsonResponse.url}`);
-    } else {
-      res.status(500).send(`An error occurred while uploading the screenshot: ${jsonResponse.error}`);
+    async function prepareFormData(screenshot) {
+      const formData = new FormData();
+      formData.append('image', screenshot, { filename: 'screenshot.png', contentType: 'image/png' });
+      return formData;
     }
+
+
+  // Send the screenshot to the Flask server
+  const formData = await prepareFormData(screenshot);
+
+  // Now you can call sendScreenshotToFlaskServer because it's defined
+  const response = await sendScreenshotToFlaskServer(formData);
+  const jsonResponse = await response.json();
+
+  // Clean up the image file after sending
+  async function cleanupImageFile() {
+    await fsp.unlink(imagePath);
+  }
+
+  await cleanupImageFile();
+
+  if (response.ok) {
+    res.send(`URL is opened in Chrome and screenshot uploaded: ${jsonResponse.url}`);
+  } else {
+    res.status(500).send(`An error occurred while uploading the screenshot: ${jsonResponse.error}`);
+  }
+
   } catch (error) {
     console.error(error);
     if (driver) {
