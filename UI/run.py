@@ -6,17 +6,13 @@ import streamlit as st
 import requests
 from urllib.parse import urlparse, urlunparse
 
-# Define the Streamlit application's configuration.
-"""
-Sets up the main Streamlit interface, which includes the title of the application,
-the initial state of the sidebar, and the main interactive components of the chat interface.
-"""
+# Streamlit interface configuration must be the first command
 st.set_page_config(
     page_title="Agent2.ai",
     initial_sidebar_state='collapsed'
 )
 
-# Streamlit interface
+# Rest of your Streamlit code follows
 st.title("Agent2.ai")
 
 with st.sidebar:
