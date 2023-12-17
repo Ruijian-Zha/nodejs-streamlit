@@ -70,6 +70,19 @@ def upload_image_to_github_base64(encoded_image, username, repo, token, image_fi
     Upload a base64 encoded image to a specified GitHub repository.
 
     Args:
+        encoded_image (str): The base64 encoded image string.
+        username (str): The GitHub username.
+        repo (str): The name of the GitHub repository.
+        token (str): The GitHub Personal Access Token.
+        image_filename (str): The filename to use for the uploaded image.
+
+    Returns:
+        str: The URL of the uploaded file if successful, else an error message.
+    """
+    """
+    Upload a base64 encoded image to a specified GitHub repository.
+
+    Args:
     encoded_image (str): The base64 encoded image string.
     username (str): Your GitHub username.
     repo (str): The name of the GitHub repository.
