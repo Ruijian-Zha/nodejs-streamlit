@@ -1,5 +1,7 @@
 /**
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
+ * It contains the getDriver() function which is responsible for creating and returning a Chrome WebDriver instance.
+ * The server is used in conjunction with the Streamlit UI to provide a seamless user experience.
  */
 
 const express = require('express');
@@ -19,11 +21,13 @@ const port = 3000;
 // Global variable to keep track of the browser instance
 let driver;
 
+
 async function openUrlInChrome(url) {
   const driver = await getDriver();
   await driver.get(url);
   return driver;
 }
+
 
 async function getDriver() {
   if (driver) {
@@ -52,6 +56,7 @@ app.get('/open-url', async (req, res) => {
     const driver = await openUrlInChrome(url);
     
     // Take a screenshot
+
     async function takeScreenshot(driver) {
   const screenshot = await driver.takeScreenshot();
   const imagePath = `screenshot.png`;
