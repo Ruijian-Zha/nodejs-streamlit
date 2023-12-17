@@ -13,9 +13,7 @@ app = Flask(__name__)
 @app.route('/upload', methods=['POST'])
 def upload_to_github():
     """
-    Handles a POST request to the '/upload' route, retrieves data from the request, checks for necessary data, and calls the function to upload a base64 encoded image to GitHub.
-
-    The function has no explicit parameters. It retrieves 'image' (base64 encoded), 'username', 'repo', and 'token' from the request data and environment variables.
+    Handles a POST request to the '/upload' route. It calls the 'retrieve_data', 'check_data' and 'upload_image' functions to handle the upload process.
 
     Returns:
         A JSON response with either the URL of the uploaded image upon a successful upload or an error message indicating failure.
@@ -23,6 +21,10 @@ def upload_to_github():
     Exceptions:
         Catches any exceptions during the image upload and returns a JSON response with the error message.
     """
+    data = retrieve_data()
+    if not check_data(data):
+        return jsonify({"error": "Missing data"}), 400
+    return upload_image(data)
     """
     Handle a POST request to the '/upload' route, retrieve data from the request, check for necessary data,
     and call the function to upload a base64 encoded image to GitHub.
@@ -43,7 +45,53 @@ def upload_to_github():
 
     The function has no explicit parameters. It retrieves 'image' (base64 encoded), 'username', 'repo', and 'token'
     from the request data and environment variables.
+def retrieve_data():
+    """
+    Retrieves data from the request and environment variables.
 
+    Returns:
+        dict: A dictionary containing 'image' (base64 encoded), 'username', 'repo', and 'token'.
+    """
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+    file = request.files['image']
+    encoded_image = base64.b64encode(file.read()).decode('utf-8')
+    username = os.getenv('USERNAME')
+    repo = os.getenv('REPO')
+    token = os.getenv('TOKEN')
+    return {'image': encoded_image, 'username': username, 'repo': repo, 'token': token}
+
+def check_data(data):
+    """
+    Checks for necessary data in the provided dictionary.
+
+    Args:
+        data (dict): A dictionary containing 'image' (base64 encoded), 'username', 'repo', and 'token'.
+
+    Returns:
+        bool: True if all necessary data is present, False otherwise.
+    """
+    return all(data.values())
+
+def upload_image(data):
+    """
+    Calls the function to upload a base64 encoded image to GitHub.
+
+    Args:
+        data (dict): A dictionary containing 'image' (base64 encoded), 'username', 'repo', and 'token'.
+
+    Returns:
+        A JSON response with either the URL of the uploaded image upon a successful upload or an error message indicating failure.
+    """
+    try:
+        # Generate a unique filename based on the current timestamp
+        image_filename = datetime.now().strftime('%Y%m%d%H%M%S') + ".png"
+        upload_url = upload_image_to_github_base64(data['image'], data['username'], data['repo'], data['token'], image_filename)
+        if upload_url.startswith("Error"):
+            return jsonify({"error": upload_url}), 500
+        return jsonify({"url": upload_url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     Returns:
         A JSON response with either the URL of the uploaded image upon a successful upload
         or an error message indicating failure.
