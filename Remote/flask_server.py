@@ -78,7 +78,10 @@ def upload_to_github():
 
 def upload_image_to_github_base64(encoded_image, username, repo, token, image_filename):
     """
-    Upload a base64 encoded image to a specified GitHub repository.
+    Uploads a base64 encoded image to a specified GitHub repository.
+
+
+    
 
     Args:
         encoded_image (str): The base64 encoded image string.
