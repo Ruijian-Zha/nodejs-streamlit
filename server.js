@@ -1,5 +1,7 @@
 /**
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
+ * It contains the getDriver() function which is responsible for creating and returning a Chrome WebDriver instance.
+ * The server is used in conjunction with the Streamlit UI to provide a seamless user experience.
  */
 
 const express = require('express');
