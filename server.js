@@ -5,21 +5,38 @@ const chrome = require('selenium-webdriver/chrome');
 const app = express();
 const port = 3000;
 
-app.get('/open-shopify', async (req, res) => {
-  let driver = await new Builder()
+// Global variable to keep track of the browser instance
+let driver;
+
+async function getDriver() {
+  if (driver) {
+    return driver;
+  }
+  driver = new Builder()
     .forBrowser('chrome')
     .setChromeOptions(new chrome.Options())
     .build();
+  return driver;
+}
+
+app.get('/open-url', async (req, res) => {
+  const url = req.query.url; // Get the URL from the query string
+  if (!url) {
+    return res.status(400).send('No URL provided.');
+  }
 
   try {
-    await driver.get('http://www.shopify.com');
-    res.send('Shopify is opened in Chrome!');
+    const driver = await getDriver();
+    await driver.get(url);
+    res.send(`URL is opened in Chrome: ${url}`);
   } catch (error) {
     console.error(error);
-    res.status(500).send('An error occurred while opening Shopify.');
-    await driver.quit(); // Move driver.quit() here to close the browser on error
+    if (driver) {
+      await driver.quit();
+      driver = null; // Reset the driver after quitting
+    }
+    res.status(500).send('An error occurred while opening the URL.');
   }
-  // Removed the finally block to keep the browser open
 });
 
 app.listen(port, () => {
