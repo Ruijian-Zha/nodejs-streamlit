@@ -132,16 +132,19 @@ app.get('/open-url', async (req, res) => {
     
           // Draw the rectangle
           ctx.strokeStyle = randomColor();
-          ctx.setLineDash([5, 5]);
+          ctx.lineWidth = 5; // Increased line width for the dash
+          ctx.setLineDash([10, 10]); // Increased dash width
           ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
     
           // Draw the label
-          const fontSize = 14; // Adjust as needed
+          const fontSize = 30; // Increased font size for the label
           ctx.font = `${fontSize}px Arial`;
           ctx.fillStyle = ctx.strokeStyle;
-          ctx.fillRect(rect.left, rect.top - fontSize, ctx.measureText(label.toString()).width + 4, fontSize);
+          // Adjust the rectangle size for the label background based on the new font size
+          ctx.fillRect(rect.left, rect.top - fontSize, ctx.measureText(label.toString()).width + 6, fontSize + 4);
           ctx.fillStyle = 'white';
-          ctx.fillText(label.toString(), rect.left + 2, rect.top - 2);
+          // Adjust the label position based on the new font size
+          ctx.fillText(label.toString(), rect.left + 3, rect.top - 3);
         });
       });
     
