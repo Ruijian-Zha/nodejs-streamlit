@@ -227,9 +227,9 @@ app.get('/open-url', async (req, res) => {
 
 /**
  * GET endpoint that retrieves the accessibility tree of the current document in the browser.
- *
- * The function invokes the Chrome WebDriver to fetch the accessibility tree,
+ * This function invokes the Chrome WebDriver to fetch the accessibility tree,
  * which can be useful for accessibility analysis and testing.
+ * It returns a promise that, when resolved, provides the accessibility tree as a JSON object.
  *
  * @return {Promise} A promise that resolves to the accessibility tree as a JSON object.
  */
