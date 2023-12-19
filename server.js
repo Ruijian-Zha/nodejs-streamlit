@@ -3,6 +3,18 @@
  * It contains the getDriver() function which is responsible for creating and returning a Chrome WebDriver instance.
  * The server is used in conjunction with the Streamlit UI to provide a seamless user experience.
  */
+/**
+ * server.js
+ *
+ * This server application initializes a Chrome WebDriver and handles browser automation tasks.
+ * It allows users to interact with a Chrome browser instance programmatically.
+ *
+ * Key functionalities include opening URLs and extracting the accessibility tree from webpages.
+ * The application is designed to work in conjunction with a Streamlit UI.
+ *
+ * Dependencies: 'express' for server routines, 'selenium-webdriver' and 'chrome' for WebDriver,
+ * 'canvas' for image manipulation, and other utility packages.
+ */
 const { createCanvas, loadImage, registerFont } = require('canvas');
 const randomColor = require('randomcolor'); 
 const express = require('express');
@@ -45,6 +57,15 @@ async function getDriver() {
  * This function takes a URL from the query string of the GET request and uses the Chrome WebDriver to open the URL in Chrome.
  */
 // https://glider-summary-urgently.ngrok-free.app
+/**
+ * GET endpoint for opening a given URL in Chrome using a WebDriver.
+ *
+ * This handler takes a URL from the 'url' query parameter of the GET request,
+ * and instructs the Chrome WebDriver to navigate to the specified URL.
+ *
+ * @param {string} url - The URL to open in the browser.
+ * @return {Promise} A promise that resolves to the response status and message.
+ */
 app.get('/open-url', async (req, res) => {
   const url = req.query.url;
   if (!url) {
@@ -202,6 +223,14 @@ app.get('/open-url', async (req, res) => {
   }
 });
 
+/**
+ * GET endpoint that retrieves the accessibility tree of the current document in the browser.
+ *
+ * The function invokes the Chrome WebDriver to fetch the accessibility tree,
+ * which can be useful for accessibility analysis and testing.
+ *
+ * @return {Promise} A promise that resolves to the accessibility tree as a JSON object.
+ */
 app.get('/accessibility-tree', async (req, res) => {
   try {
     const driver = await getDriver();
