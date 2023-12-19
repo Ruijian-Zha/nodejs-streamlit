@@ -61,8 +61,9 @@ async function getDriver() {
 /**
  * GET endpoint for opening a given URL in Chrome using a WebDriver.
  *
- * This handler takes a URL from the 'url' query parameter of the GET request,
+ * This function takes a URL from the 'url' query parameter of the GET request,
  * and instructs the Chrome WebDriver to navigate to the specified URL.
+ * It returns a promise that resolves with the response status and message.
  *
  * @param {string} url - The URL to open in the browser.
  * @return {Promise} A promise that resolves to the response status and message.
