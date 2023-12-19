@@ -35,10 +35,11 @@ const port = 3000;
 let driver;
 
 /**
- * This function creates a new Chrome WebDriver instance if one does not already exist.
- * It then returns the WebDriver instance.
- * 
- * @return {WebDriver} The Chrome WebDriver instance.
+ * Creates a new Chrome WebDriver instance if one does not already exist and returns the existing or new WebDriver instance.
+ *
+ * This function does not take any parameters.
+ *
+ * @return {WebDriver} The current or a new Chrome WebDriver instance.
  */
 async function getDriver() {
   if (driver) {
@@ -60,8 +61,9 @@ async function getDriver() {
 /**
  * GET endpoint for opening a given URL in Chrome using a WebDriver.
  *
- * This handler takes a URL from the 'url' query parameter of the GET request,
+ * This function takes a URL from the 'url' query parameter of the GET request,
  * and instructs the Chrome WebDriver to navigate to the specified URL.
+ * It returns a promise that resolves with the response status and message.
  *
  * @param {string} url - The URL to open in the browser.
  * @return {Promise} A promise that resolves to the response status and message.
@@ -225,9 +227,9 @@ app.get('/open-url', async (req, res) => {
 
 /**
  * GET endpoint that retrieves the accessibility tree of the current document in the browser.
- *
- * The function invokes the Chrome WebDriver to fetch the accessibility tree,
+ * This function invokes the Chrome WebDriver to fetch the accessibility tree,
  * which can be useful for accessibility analysis and testing.
+ * It returns a promise that, when resolved, provides the accessibility tree as a JSON object.
  *
  * @return {Promise} A promise that resolves to the accessibility tree as a JSON object.
  */
