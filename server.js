@@ -53,6 +53,9 @@ app.get('/open-url', async (req, res) => {
 
   try {
     const driver = await getDriver();
+
+
+    
     await driver.get(url);
 
     // Execute JavaScript code in the browser to get the elements and their positions
@@ -118,6 +121,14 @@ app.get('/open-url', async (req, res) => {
             tag: element.tag,
             link: element.link || null
           };
+
+          rect.left *= 2;
+          rect.top *= 2;
+          rect.right *= 2;
+          rect.bottom *= 2;
+
+          rect.width *= 2;
+          rect.height *= 2;
     
           // Draw the rectangle
           ctx.strokeStyle = randomColor();
