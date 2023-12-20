@@ -41,6 +41,14 @@ let driver;
  *
  * @return {WebDriver} The current or a new Chrome WebDriver instance.
  */
+
+/**
+ * Creates a new Chrome WebDriver instance if one does not already exist and returns the existing or new WebDriver instance.
+ *
+ * This function does not take any parameters.
+ *
+ * @return {WebDriver} The current or a new Chrome WebDriver instance.
+ */
 async function getDriver() {
   if (driver) {
     return driver;
