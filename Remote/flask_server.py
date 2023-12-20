@@ -1,14 +1,82 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+from prompt.gpt_4v_prompt import gpt_4v_action_prompt
 import os
 import base64
 import requests
 from datetime import datetime
+from openai import OpenAI
+import re
+import json
 
 # Load environment variables from .env file
 load_dotenv(override=True)
 
 app = Flask(__name__)
+
+@app.route('/process_query', methods=['POST'])
+def process_query():
+    request_data = request.get_json()
+    query_string = request_data.get('query_string')
+    img_url = request_data.get('img_url')
+    element_centers = request_data.get('element_centers')
+    current_link = request_data.get('current_link')
+    log = request_data.get('log')
+
+    api_key = os.getenv('OPENAI_KEY')
+
+    if not all([api_key, query_string, img_url, element_centers, current_link, log]):
+        return jsonify({"error": "Missing data"}), 400
+
+    client = OpenAI(api_key=api_key)
+
+    element_prompt = ""
+    for element_id, element_info in element_centers.items():
+        element_prompt += f"Element {element_id} is a {element_info['tag']}"
+        if 'link' in element_info and element_info['link']:
+            element_prompt += f" with link {element_info['link']}\n"
+        else:
+            element_prompt += "\n"
+
+    prompt = gpt_4v_action_prompt.format(query=query_string, element_info=element_prompt, current_link=current_link, log=log)
+    print(prompt)
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": img_url,
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+
+    message = response.choices[0].message.content
+    input_str = message
+
+    match = re.search(r'```json\n(.+?)\n```', input_str, re.DOTALL)
+
+    if match:
+        json_str = match.group(1)
+        try:
+            parsed_json = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            print("Error parsing JSON:", e)
+            return jsonify({"error": "Error parsing JSON"}), 500
+    else:
+        print("No JSON found in the string")
+        return jsonify({"error": "No JSON found in the string"}), 500
+
+    return jsonify(parsed_json)
+
 
 @app.route('/upload', methods=['POST'])
 def upload_to_github():
@@ -23,35 +91,7 @@ def upload_to_github():
     Exceptions:
         Catches any exceptions during the image upload and returns a JSON response with the error message.
     """
-    """
-    Handle a POST request to the '/upload' route, retrieve data from the request, check for necessary data,
-    and call the function to upload a base64 encoded image to GitHub.
 
-    The function has no explicit parameters. It retrieves 'image' (base64 encoded), 'username', 'repo', and 'token'
-    from the request data and environment variables.
-
-    Returns:
-        A JSON response with either the URL of the uploaded image upon a successful upload
-        or an error message indicating failure.
-
-    Exceptions:
-        Catches any exceptions during the image upload and returns a JSON response with the error message.
-    """
-    """
-    Handle a POST request to the '/upload' route, retrieve data from the request, check for necessary data,
-    and call the function to upload a base64 encoded image to GitHub.
-
-    The function has no explicit parameters. It retrieves 'image' (base64 encoded), 'username', 'repo', and 'token'
-    from the request data and environment variables.
-
-    Returns:
-        A JSON response with either the URL of the uploaded image upon a successful upload
-        or an error message indicating failure.
-
-    Exceptions:
-        Catches any exceptions during the image upload and returns a JSON response with the error message.
-    """
-    # Retrieve data from the request
 # Retrieve the file from the request
     if 'image' not in request.files:
         return jsonify({"error": "No image file provided"}), 400
@@ -72,27 +112,12 @@ def upload_to_github():
         upload_url = upload_image_to_github_base64(encoded_image, username, repo, token, image_filename)
         if upload_url.startswith("Error"):
             return jsonify({"error": upload_url}), 500
-        return jsonify({"url": upload_url})
+        print("Upload URL:", upload_url)
+        return jsonify({"img_url": upload_url})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def upload_image_to_github_base64(encoded_image, username, repo, token, image_filename):
-    """
-    Uploads a base64 encoded image to a specified GitHub repository.
-
-
-    
-
-    Args:
-        encoded_image (str): The base64 encoded image string.
-        username (str): The GitHub username.
-        repo (str): The name of the GitHub repository.
-        token (str): The GitHub Personal Access Token.
-        image_filename (str): The filename to use for the uploaded image.
-
-    Returns:
-        str: The URL of the uploaded file if successful, else an error message.
-    """
     """
     Upload a base64 encoded image to a specified GitHub repository.
 
@@ -113,7 +138,9 @@ def upload_image_to_github_base64(encoded_image, username, repo, token, image_fi
     response = requests.put(url, json=payload, headers=headers)
 
     if response.status_code == 201:
-        return response.json()['content']['html_url']
+        # Construct the user-facing GitHub URL for the image
+        github_url = f"https://github.com/{username}/{repo}/blob/main/{image_filename}"
+        return github_url
     else:
         return "Error: " + response.json().get('message', 'Unable to upload file')
 
