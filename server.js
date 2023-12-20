@@ -1,7 +1,18 @@
 /**
+ * server.js
+ *
+ * Overview:
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
- * It contains the getDriver() function which is responsible for creating and returning a Chrome WebDriver instance.
- * The server is used in conjunction with the Streamlit UI to provide a seamless user experience.
+ * The server's key functionalities include opening URLs for inspection and extracting the accessibility tree from webpages,
+ * which is vital for accessibility analysis and testing.
+ *
+ * Dependencies:
+ * - express: for server routines
+ * - selenium-webdriver: for WebDriver operations
+ * - chrome: for specific Chrome WebDriver configurations
+ * - canvas: for image manipulation utilities
+ * - Other utility packages are also utilized as needed.
+ *
  */
 /**
  * server.js
@@ -42,6 +53,14 @@ let driver;
  *
  * @return {WebDriver} The current or a new Chrome WebDriver instance.
  */
+
+/**
+ * Creates a new Chrome WebDriver instance if one does not already exist and returns the existing or new WebDriver instance.
+ *
+ * This function does not take any parameters.
+ *
+ * @return {WebDriver} The current or a new Chrome WebDriver instance.
+ */
 async function getDriver() {
   if (driver) {
     return driver;
@@ -68,6 +87,12 @@ async function getDriver() {
  *
  * @param {string} url - The URL to open in the browser.
  * @return {Promise} A promise that resolves to the response status and message.
+ */
+/**
+ * Handles the GET request to open a URL in Chrome.
+ *
+ * This function takes a URL from the 'url' query parameter of the GET request, instructs the Chrome WebDriver
+ * to navigate to the specified URL, and returns a promise that resolves with the response status and message.
  */
 app.get('/open-url', async (req, res) => {
   const url = req.query.url || 'http://www.google.com';
