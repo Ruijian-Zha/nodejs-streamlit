@@ -26,6 +26,21 @@
  * Dependencies: 'express' for server routines, 'selenium-webdriver' and 'chrome' for WebDriver,
  * 'canvas' for image manipulation, and other utility packages.
  */
+/**
+ * server.js
+ *
+ * This server setup file initiates an express server and connects a Selenium WebDriver for browser automation.
+ * It defines routes to receive HTTP requests for opening URLs in a browser and performing various actions.
+ *
+ * Dependencies:
+ * - express: Lightweight server framework
+ * - selenium-webdriver/chrome: Browser automation tool for Chrome
+ * - canvas: Module to handle image processing tasks
+ *
+ * Usage:
+ * Run `node server.js` to start. Accessible through HTTP requests to perform browser automation.
+ */
+
 const { createCanvas, loadImage, registerFont } = require('canvas');
 const helpers = require('./helpers');
 const randomColor = require('randomcolor'); 
@@ -61,6 +76,18 @@ let driver;
  *
  * @return {WebDriver} The current or a new Chrome WebDriver instance.
  */
+/**
+ * Retrieves the Chrome WebDriver instance.
+ * If it does not exist a new instance is created and returned.
+ *
+ * @returns {Promise<WebDriver>} A promise that resolves to a WebDriver instance.
+ */
+/**
+ * Ensures a Chrome WebDriver instance is active and returns it.
+ * If no instance is active, this function creates a new instance.
+ *
+ * @returns {Promise<WebDriver>} The existing or newly-created Chrome WebDriver instance.
+ */
 async function getDriver() {
   if (driver) {
     return driver;
@@ -93,6 +120,17 @@ async function getDriver() {
  *
  * This function takes a URL from the 'url' query parameter of the GET request, instructs the Chrome WebDriver
  * to navigate to the specified URL, and returns a promise that resolves with the response status and message.
+ */
+/**
+ * Endpoint for opening a URL in a Chrome browser via Selenium WebDriver.
+ *
+ * Retrieves the URL specified in the 'url' query parameter and commands the WebDriver
+ * to open it in Chrome. The server responds with success or an error status based on action outcome.
+ *
+ * @param {express.Request} req - The request object carrying the 'url'.
+ * @param {express.Response} res - The response object for sending the outcome to the client.
+ * @async
+ * @returns {Promise<void>} A promise that resolves once the action is completed or errors out.
  */
 app.get('/open-url', async (req, res) => {
   const url = req.query.url || 'http://www.google.com';
