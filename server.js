@@ -27,6 +27,7 @@
  * 'canvas' for image manipulation, and other utility packages.
  */
 const { createCanvas, loadImage, registerFont } = require('canvas');
+const helpers = require('./helpers');
 const randomColor = require('randomcolor'); 
 const express = require('express');
 const { Builder } = require('selenium-webdriver');
