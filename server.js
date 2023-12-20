@@ -76,6 +76,12 @@ async function getDriver() {
  * @param {string} url - The URL to open in the browser.
  * @return {Promise} A promise that resolves to the response status and message.
  */
+/**
+ * Handles the GET request to open a URL in Chrome.
+ *
+ * This function takes a URL from the 'url' query parameter of the GET request, instructs the Chrome WebDriver
+ * to navigate to the specified URL, and returns a promise that resolves with the response status and message.
+ */
 app.get('/open-url', async (req, res) => {
   const url = req.query.url || 'http://www.google.com';
   const user_input = req.query.user_input;
