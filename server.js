@@ -69,17 +69,20 @@ async function getDriver() {
  * @return {Promise} A promise that resolves to the response status and message.
  */
 app.get('/open-url', async (req, res) => {
-  const url = req.query.url;
-  if (!url) {
-    return res.status(400).send('No URL provided.');
+  const url = req.query.url || 'http://www.google.com';
+  const user_input = req.query.user_input;
+  if (!user_input) {
+    return res.status(400).send('No user input provided.');
   }
+  console.log('URL:', url);
+  console.log('User input:', user_input);
 
   try {
     const driver = await getDriver();
-
-
-    
     await driver.get(url);
+
+    // Wait for 2 seconds
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Execute JavaScript code in the browser to get the elements and their positions
     const js_code = `
@@ -205,15 +208,19 @@ app.get('/open-url', async (req, res) => {
       body: formData,
       headers: formData.getHeaders() // This is necessary for multipart/form-data
     });
+
+    // Parse the JSON response
     const jsonResponse = await response.json();
 
-    // Clean up the image file after sending
-    // await fsp.unlink(imagePath);
-
-    if (response.ok) {
-      res.send(`URL is opened in Chrome and screenshot uploaded: ${jsonResponse.url}`);
+    // Check if there's an error in the response
+    if (jsonResponse.error) {
+        console.error('Error uploading file:', jsonResponse.error);
+        res.status(500).send(`An error occurred while uploading the screenshot: ${jsonResponse.error}`);
     } else {
-      res.status(500).send(`An error occurred while uploading the screenshot: ${jsonResponse.error}`);
+        // Extract the uploaded URL
+        const uploadedUrl = jsonResponse.img_url;
+        console.log('Uploaded URL:', uploadedUrl);
+        res.send(`URL is opened in Chrome and screenshot uploaded: ${uploadedUrl}`);
     }
   } catch (error) {
     console.error(error);
