@@ -241,7 +241,7 @@ app.get('/open-url', async (req, res) => {
     // Check if there's an error in the response
     if (jsonResponse.error) {
         console.error('Error uploading file:', jsonResponse.error);
-        res.status(500).send(`An error occurred while uploading the screenshot: ${jsonResponse.error}`);
+        res.status(500).send({ errorMsg: `An error occurred while uploading the screenshot: ${jsonResponse.error}` }); // Send error message as an object
     } else {
         // Extract the uploaded URL
         const uploadedUrl = jsonResponse.img_url;
@@ -273,7 +273,7 @@ app.get('/accessibility-tree', async (req, res) => {
     res.json(accessibilityTree);
   } catch (error) {
     console.error(error);
-    res.status(500).send('An error occurred while retrieving the accessibility tree.');
+    res.status(500).send({ errorMsg: 'An error occurred while retrieving the accessibility tree.' }); // Send error message as an object
   }
 });
 
@@ -281,3 +281,5 @@ app.get('/accessibility-tree', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+module.exports = app; // Export the server instance
