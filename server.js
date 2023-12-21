@@ -72,6 +72,48 @@ async function getDriver() {
   return driver;
 }
 
+async function sendToFlaskServer(queryString, imgURL, elementCenters, currentLink, log) {
+  const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/process_query';
+
+  // Construct the request payload
+  const payload = {
+    query_string: queryString,
+    img_url: imgURL,
+    element_centers: elementCenters,
+    current_link: currentLink,
+    log: log
+  };
+
+  console.log('Sending payload to Flask server:', payload); // Log the payload for debugging
+
+  // Send the request to the Flask server
+  try {
+    const response = await fetch(flaskServerUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Log the response for debugging
+    const responseBody = await response.text();
+    console.log('Response from Flask server:', responseBody);
+
+    // Check if the response is ok (status code 200-299)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Parse the JSON response
+    const jsonResponse = JSON.parse(responseBody);
+    return jsonResponse; // Return the parsed JSON response
+  } catch (error) {
+    console.error('Error sending request to Flask server:', error);
+    throw error; // Rethrow the error to be handled by the caller
+  }
+}
+
 /**
  * Handles the GET request to open a URL in Chrome.
  *
@@ -169,7 +211,7 @@ app.get('/open-url', async (req, res) => {
           const center_y = (rect.top + rect.bottom) / 2;
           const label = index + 1;
           elementCenters[label] = {
-            position: { x: center_x, y: center_y },
+            position: { x: center_x*2, y: center_y*2 },
             tag: element.tag,
             link: element.link || null
           };
@@ -242,11 +284,36 @@ app.get('/open-url', async (req, res) => {
     if (jsonResponse.error) {
         console.error('Error uploading file:', jsonResponse.error);
         res.status(500).send({ errorMsg: `An error occurred while uploading the screenshot: ${jsonResponse.error}` }); // Send error message as an object
-    } else {
-        // Extract the uploaded URL
-        const uploadedUrl = jsonResponse.img_url;
-        console.log('Uploaded URL:', uploadedUrl);
-        res.send(`URL is opened in Chrome and screenshot uploaded: ${uploadedUrl}`);
+    } 
+
+    // Extract the uploaded URL
+    const uploadedUrl = jsonResponse.img_url;
+    console.log('Uploaded URL:', uploadedUrl);
+
+    // Initialize log with empty string
+    let log = '';
+
+    try {
+      const flaskResponse = await sendToFlaskServer(user_input, uploadedUrl, elementCenters, url, log);
+
+
+      if ('element' in flaskResponse["nextAction"]) {
+        const elementIndex = flaskResponse["nextAction"].element; // Assuming this is the correct key as a string
+        const elementData = elementCenters[elementIndex];
+        if (elementData) {
+          const elementPosition = elementData.position; // Access the position property
+          flaskResponse["nextAction"].elementPosition = elementPosition;
+        } else {
+          console.error(`No element found for index: ${elementIndex}`);
+        }
+      }
+
+       // Handle the response from the Flask server
+      console.log('Response from Flask server:', flaskResponse);
+      res.json(flaskResponse); // Send the response back to the client
+    } catch (error) {
+      console.error('Error processing query with Flask server:', error);
+      res.status(500).send({ errorMsg: 'An error occurred while processing the query with the Flask server.' });
     }
   } catch (error) {
     console.error(error);
