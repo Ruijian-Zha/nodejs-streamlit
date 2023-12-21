@@ -1,7 +1,16 @@
 /**
- * server.js
+ * server.js - Node.js Server Application
  *
  * Overview:
+ * This file includes a Node.js server application designed to initialize a Chrome WebDriver
+ * and handle various browser automation tasks. It provides functionality to open URLs in a
+ * browser window and extract accessibility tree information from web pages.
+ *
+ * Key functionalities:
+ * - Open URLs in Chrome for inspection and interaction.
+ * - Extract the accessibility tree from webpages for accessibility analysis.
+ *
+ * Dependencies:
  * This file sets up a server that can open URLs in a browser using a Chrome WebDriver.
  * The server's key functionalities include opening URLs for inspection and extracting the accessibility tree from webpages,
  * which is vital for accessibility analysis and testing.
@@ -62,6 +71,15 @@ let driver;
  *
  * @return {WebDriver} The current or a new Chrome WebDriver instance.
  */
+/**
+ * getDriver - Creates and retrieves a Chrome WebDriver instance.
+ *
+ * This function checks if a WebDriver instance already exists and, if not,
+ * creates a new one. It does not accept any parameters and always returns
+ * a WebDriver instance.
+ *
+ * @returns {WebDriver} The existing or newly created Chrome WebDriver instance.
+ */
 async function getDriver() {
   if (driver) {
     return driver;
@@ -73,6 +91,20 @@ async function getDriver() {
   return driver;
 }
 
+/**
+ * sendToFlaskServer - Sends a request to Flask server with a specific payload.
+ *
+ * This function sends a payload to the Flask server containing various elements of interaction data.
+ * It returns a JSON response from the server.
+ *
+ * @param {string} queryString - The query string to be processed.
+ * @param {string} imgURL - The URL of the image to be used.
+ * @param {object} elementCenters - The centers of elements on the page.
+ * @param {string} currentLink - The currently active link.
+ * @param {string} log - A log of interactions.
+ *
+ * @returns {Promise} - A promise that resolves to the JSON response from the Flask server.
+ */
 async function sendToFlaskServer(queryString, imgURL, elementCenters, currentLink, log) {
   const flaskServerUrl = 'https://glider-summary-urgently.ngrok-free.app/process_query';
 
