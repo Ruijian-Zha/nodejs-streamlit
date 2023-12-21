@@ -434,3 +434,4 @@ app.listen(port, () => {
 });
 
 module.exports = app; // Export the server instance
+module.exports.sendToFlaskServer = sendToFlaskServer; // Export the sendToFlaskServer function
