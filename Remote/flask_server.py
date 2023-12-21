@@ -1,3 +1,6 @@
+"""
+This file contains the server-side logic for processing queries and uploading images to GitHub using Flask and OpenAI.
+"""
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from prompt.gpt_4v_prompt import gpt_4v_action_prompt
@@ -16,6 +19,9 @@ app = Flask(__name__)
 
 @app.route('/process_query', methods=['POST'])
 def process_query():
+    """
+    This function processes a query from a POST request, generates a prompt for the GPT-4 Vision model, sends the prompt and an image URL to the model, and returns the model's response as JSON.
+    """
     request_data = request.get_json()
     print("Request data:", request_data)
     query_string = request_data.get('query_string')
@@ -46,10 +52,11 @@ def process_query():
 
     prompt = gpt_4v_action_prompt.format(query=query_string, element_info=element_prompt, current_link=current_link, log=log)
     print("Generated prompt:", prompt)
+    username = os.getenv('USERNAME')
+    repo = os.getenv('REPO')
     # Parse down the name after /main/ in the URL
     image_name = img_url.split('/main/')[-1]
-    print("Image name extracted:", image_name)
-    img_url = "https://raw.githubusercontent.com/Ruijian-Zha/My_Image/main/" + image_name
+    img_url = "https://raw.githubusercontent.com/" + username + "/" + repo + "/main/" + image_name
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -79,7 +86,6 @@ def process_query():
         try:
             parsed_json = json.loads(json_str)
         except json.JSONDecodeError as e:
-            print(f"Error parsing JSON: {e}")
             return jsonify({"error": "Error parsing JSON"}), 500
     else:
         print("No JSON found in the string")
@@ -90,6 +96,9 @@ def process_query():
 
 @app.route('/upload', methods=['POST'])
 def upload_to_github():
+    """
+    This function handles a POST request to upload a base64 encoded image to GitHub. It retrieves the image, username, repo, and token from the request data and environment variables, and returns the URL of the uploaded image or an error message.
+    """
     """
     Handles a POST request to the '/upload' route, retrieves data from the request, checks for necessary data, and calls the function to upload a base64 encoded image to GitHub.
 
