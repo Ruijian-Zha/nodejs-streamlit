@@ -42,6 +42,7 @@ const express = require('express');
 const { Builder } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const FormData = require('form-data');
+const { By, Key } = require('selenium-webdriver');
 let fetch;
 (async () => {
   fetch = (await import('node-fetch')).default;
@@ -179,6 +180,9 @@ app.get('/open-url', async (req, res) => {
 
   try {
     const driver = await getDriver();
+    // Maximize the browser window to ensure it is in focus
+    await driver.manage().window().maximize();
+
     await driver.get(url);
 
     // Wait for 2 seconds
@@ -354,6 +358,86 @@ app.get('/open-url', async (req, res) => {
       driver = null;
     }
     res.status(500).send('An error occurred while opening the URL or taking a screenshot.');
+  }
+});
+
+app.get('/action', async (req, res) => {
+  // Parse the action data from the query parameters
+  const actionData = JSON.parse(req.query.query); // Assuming the query parameter is named 'query'
+  console.log('Received action data:', actionData);
+
+  // Validate the actionData or return an error
+  if (!actionData || !actionData.nextAction) {
+    return res.status(400).send('Invalid action data provided.');
+  }
+
+  try {
+    // Obtain the WebDriver instance using the getDriver function
+    const driver = await getDriver();
+    // Maximize the browser window to ensure it is in focus
+    await driver.manage().window().maximize();
+
+    // Parse the action data
+    const { briefExplanation, nextAction } = actionData;
+    console.log(briefExplanation); // Log the brief explanation
+
+    // Check if the required fields are present
+    if (!nextAction.text || !nextAction.elementPosition) {
+      throw new Error('Missing required fields in the action data.');
+    }
+
+    // Add 130 to the y position of the element
+    nextAction.elementPosition.x = Math.floor(nextAction.elementPosition.x / 2);
+    nextAction.elementPosition.y = Math.floor(nextAction.elementPosition.y / 2);
+
+    console.log('Waiting for 2 seconds before moving to the element...');
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log(`Moving to the element at position: ${JSON.stringify(nextAction.elementPosition)}`);
+
+    // Highlight the element by drawing a border around it
+    const highlightScript = `
+    const elementBox = document.createElement('div');
+    document.body.appendChild(elementBox);
+    elementBox.style.position = 'absolute';
+    elementBox.style.left = '${nextAction.elementPosition.x}px';
+    elementBox.style.top = '${nextAction.elementPosition.y}px';
+    elementBox.style.width = '10px'; // Adjust this to the width of the element if known
+    elementBox.style.height = '10px'; // Adjust this to the height of the element if known
+    elementBox.style.border = '4px solid #FF0000'; // Increased border width and set color to bright red
+    elementBox.style.backgroundColor = 'rgba(255, 0, 0, 0.3)'; // Red background with opacity
+    elementBox.style.zIndex = '10000';
+    setTimeout(() => document.body.removeChild(elementBox), 3000); // Remove the box after 3 seconds to make it visible longer
+  `;
+    await driver.executeScript(highlightScript);
+
+    // Perform the click action at the specific pixel coordinates
+    await driver.actions().move({ x: nextAction.elementPosition.x, y: nextAction.elementPosition.y }).click().perform();
+    console.log('Clicked at the specified pixel position.');
+    console.log('Waiting for 2 seconds before typing...');
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log(`Typing the text: ${nextAction.text}`);
+    await driver.actions().sendKeys(nextAction.text).perform();
+    console.log('Text typed.');
+
+    console.log('Waiting for 2 seconds before hitting enter...');
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log('Hitting enter...');
+    await driver.actions().sendKeys(Key.ENTER).perform();
+    console.log('Enter key pressed.');
+
+    // Return success message
+    res.send('Typing is Success');
+  } catch (error) {
+    console.error('Error performing action:', error);
+    res.status(500).send('An error occurred while performing the action.');
+  } finally {
+    // Quit the driver if it was initialized
+    // if (driver) {
+    //   await driver.quit();
+    // }
   }
 });
 
