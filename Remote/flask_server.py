@@ -17,16 +17,22 @@ app = Flask(__name__)
 @app.route('/process_query', methods=['POST'])
 def process_query():
     request_data = request.get_json()
+    print("Request data:", request_data)
     query_string = request_data.get('query_string')
     img_url = request_data.get('img_url')
     element_centers = request_data.get('element_centers')
     current_link = request_data.get('current_link')
     log = request_data.get('log')
 
+    if not all([query_string, img_url, element_centers, current_link]) or log is None:
+        print("Error: Missing required data in request.")
+        return jsonify({"error": "Missing data"}), 400
+
     api_key = os.getenv('OPENAI_KEY')
 
-    if not all([api_key, query_string, img_url, element_centers, current_link, log]):
-        return jsonify({"error": "Missing data"}), 400
+    if not api_key:
+        print("Error: OPENAI_KEY is not set in environment variables.")
+        return jsonify({"error": "Missing OPENAI_KEY"}), 400
 
     client = OpenAI(api_key=api_key)
 
@@ -39,7 +45,11 @@ def process_query():
             element_prompt += "\n"
 
     prompt = gpt_4v_action_prompt.format(query=query_string, element_info=element_prompt, current_link=current_link, log=log)
-    print(prompt)
+    print("Generated prompt:", prompt)
+    # Parse down the name after /main/ in the URL
+    image_name = img_url.split('/main/')[-1]
+    print("Image name extracted:", image_name)
+    img_url = "https://raw.githubusercontent.com/Ruijian-Zha/My_Image/main/" + image_name
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -69,7 +79,7 @@ def process_query():
         try:
             parsed_json = json.loads(json_str)
         except json.JSONDecodeError as e:
-            print("Error parsing JSON:", e)
+            print(f"Error parsing JSON: {e}")
             return jsonify({"error": "Error parsing JSON"}), 500
     else:
         print("No JSON found in the string")
